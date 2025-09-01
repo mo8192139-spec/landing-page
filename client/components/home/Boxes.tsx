@@ -202,7 +202,7 @@ export default function Boxes() {
         preventCollision
       >
         {visible.map((b) => (
-          <div key={b.id} data-grid={{ i: b.id }}>
+          <div key={b.id}>
             <Box id={b.id} />
           </div>
         ))}
