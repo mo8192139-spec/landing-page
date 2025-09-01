@@ -9,7 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useSiteConfig } from "@/state/site-config";
 import { bgStyleFrom } from "@/lib/background";
-import RGL, { Responsive, WidthProvider } from "react-grid-layout";
+import { Responsive, WidthProvider, type Layouts } from "react-grid-layout";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
