@@ -185,6 +185,46 @@ export default function BoxesAdmin() {
         }
       />
 
+      <AdminSection title="Global Grid Settings" description="Configure columns and spacing per device.">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm">Desktop Columns</label>
+            <input type="number" min={1} max={24} value={state.settings?.grid?.cols?.desktop ?? 12}
+              onChange={(e) => set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), cols: { ...(state.settings?.grid?.cols||{}), desktop: Number(e.target.value) } } } })}
+              className="border rounded px-2 py-1 text-sm" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm">Tablet Columns</label>
+            <input type="number" min={1} max={24} value={state.settings?.grid?.cols?.tablet ?? 8}
+              onChange={(e) => set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), cols: { ...(state.settings?.grid?.cols||{}), tablet: Number(e.target.value) } } } })}
+              className="border rounded px-2 py-1 text-sm" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm">Mobile Columns</label>
+            <input type="number" min={1} max={12} value={state.settings?.grid?.cols?.mobile ?? 4}
+              onChange={(e) => set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), cols: { ...(state.settings?.grid?.cols||{}), mobile: Number(e.target.value) } } } })}
+              className="border rounded px-2 py-1 text-sm" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm">Row Height</label>
+            <input type="number" min={8} max={80} value={state.settings?.grid?.rowHeight ?? 20}
+              onChange={(e) => set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), rowHeight: Number(e.target.value) } } })}
+              className="border rounded px-2 py-1 text-sm" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm">Margin (px)</label>
+            <div className="flex items-center gap-2">
+              <input type="number" min={0} max={64} value={(state.settings?.grid?.margin||[16,16])[0]}
+                onChange={(e) => { const m = (state.settings?.grid?.margin||[16,16]) as [number,number]; const v:[number,number]=[Number(e.target.value), m[1]]; set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), margin: v } } }); }}
+                className="border rounded px-2 py-1 text-sm w-24" />
+              <input type="number" min={0} max={64} value={(state.settings?.grid?.margin||[16,16])[1]}
+                onChange={(e) => { const m = (state.settings?.grid?.margin||[16,16]) as [number,number]; const v:[number,number]=[m[0], Number(e.target.value)]; set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), margin: v } } }); }}
+                className="border rounded px-2 py-1 text-sm w-24" />
+            </div>
+          </div>
+        </div>
+      </AdminSection>
+
       <AdminSection title="Layout Designer" description="Drag to move, resize from corners. Responsive layouts for desktop/tablet/mobile are stored.">
         <ResponsiveGridLayout
           className="layout"
@@ -193,9 +233,9 @@ export default function BoxesAdmin() {
           cols={cols as any}
           isResizable
           isDraggable
-          margin={[16, 16]}
-          rowHeight={20}
-          containerPadding={[0, 0]}
+          margin={state.settings?.grid?.margin || [16, 16]}
+          rowHeight={state.settings?.grid?.rowHeight || 20}
+          containerPadding={state.settings?.grid?.containerPadding || [0, 0]}
           measureBeforeMount
           useCSSTransforms
           compactType={null}
