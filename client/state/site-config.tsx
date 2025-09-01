@@ -173,6 +173,9 @@ function sanitizeConfig(data: SiteConfig): SiteConfig {
       borderRadius: typeof b.borderRadius === "number" ? b.borderRadius : 12,
       shadow: b.shadow || { intensity: 12, direction: "bottom-right" },
       background,
+      align: b.align || "left",
+      vAlign: b.vAlign || "top",
+      layout: b.layout || undefined,
       modalStyle: b.modalStyle
         ? {
             ...b.modalStyle,
@@ -205,7 +208,7 @@ const DEFAULTS: SiteConfig = {
     contactText: "Contact Us",
     languages: [
       { code: "en", label: "English" },
-      { code: "ar", label: "العربي��" },
+      { code: "ar", label: "العربية" },
     ],
     selectedLang: "en",
     background: { kind: "color", color: "#ffffff" },
