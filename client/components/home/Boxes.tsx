@@ -197,9 +197,9 @@ export default function Boxes() {
         cols={cols}
         isResizable={false}
         isDraggable={false}
-        margin={[16, 16]}
-        rowHeight={20}
-        containerPadding={[0, 0]}
+        margin={state.settings?.grid?.margin || [16, 16]}
+        rowHeight={state.settings?.grid?.rowHeight || 20}
+        containerPadding={state.settings?.grid?.containerPadding || [0, 0]}
         measureBeforeMount
         useCSSTransforms
         compactType={null}
