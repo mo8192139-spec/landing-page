@@ -328,6 +328,39 @@ export default function BoxesAdmin() {
                 </div>
 
                 <div className="space-y-2">
+                  <label className="text-sm">Subtitle</label>
+                  <input
+                    value={draft.subtitle || ""}
+                    onChange={(e) => setDraft(live.id, { subtitle: e.target.value })}
+                    className="w-full border rounded px-2 py-1 text-sm"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm">Alignment</label>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={draft.align || "left"}
+                      onChange={(e) => setDraft(live.id, { align: e.target.value as any })}
+                      className="border rounded px-2 py-1 text-sm"
+                    >
+                      <option value="left">Left</option>
+                      <option value="center">Center</option>
+                      <option value="right">Right</option>
+                    </select>
+                    <select
+                      value={draft.vAlign || "top"}
+                      onChange={(e) => setDraft(live.id, { vAlign: e.target.value as any })}
+                      className="border rounded px-2 py-1 text-sm"
+                    >
+                      <option value="top">Top</option>
+                      <option value="center">Middle</option>
+                      <option value="bottom">Bottom</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
                   <label className="text-sm">CTA Mode</label>
                   <select
                     value={draft.ctaMode || "button"}
