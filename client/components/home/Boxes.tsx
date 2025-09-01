@@ -9,6 +9,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useSiteConfig } from "@/state/site-config";
 import { bgStyleFrom } from "@/lib/background";
+import { Responsive, WidthProvider, type Layouts } from "react-grid-layout";
+
+const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface BoxProps {
   id: string;
@@ -54,7 +57,6 @@ function Box({ id }: BoxProps) {
           }}
           disabled={!modalEnabled}
         >
-          {/* Image on top with controlled height */}
           {box.imageUrl && (
             <div className="w-full">
               <img
@@ -69,11 +71,29 @@ function Box({ id }: BoxProps) {
               />
             </div>
           )}
-          {/* Card body */}
-          <div className="p-4 bg-white/90 backdrop-blur-[1px]">
+          <div
+            className={cn(
+              "p-4 bg-white/90 backdrop-blur-[1px] flex flex-col",
+              box.vAlign === "center"
+                ? "justify-center"
+                : box.vAlign === "bottom"
+                  ? "justify-end"
+                  : "justify-start",
+              box.align === "center"
+                ? "items-center text-center"
+                : box.align === "right"
+                  ? "items-end text-right"
+                  : "items-start text-left",
+            )}
+          >
             <div className="text-base font-semibold text-neutral-900">
               {box.title}
             </div>
+            {box.subtitle && (
+              <div className="text-sm text-neutral-600 mt-0.5">
+                {box.subtitle}
+              </div>
+            )}
             <div className="mt-3 flex items-center gap-2">
               {(box.ctaMode === "button" ||
                 box.ctaMode === "both" ||
@@ -147,6 +167,43 @@ export default function Boxes() {
   const visible = state.boxes.filter((b) => !b.hidden);
   const pad = state.settings?.sectionPadding?.boxes ?? 24;
 
+  const cols = {
+    lg: state.settings?.grid?.cols?.desktop ?? 12,
+    md: state.settings?.grid?.cols?.tablet ?? 8,
+    sm: state.settings?.grid?.cols?.mobile ?? 4,
+  };
+  const breakpoints = { lg: 1200, md: 996, sm: 0 };
+  const defaultSize = (size?: string) =>
+    size === "large"
+      ? cols.lg
+      : size === "medium"
+        ? Math.ceil(cols.lg / 2)
+        : Math.ceil(cols.lg / 4);
+
+  const layouts: Layouts = {
+    lg: visible.map((b, i) => ({
+      i: b.id,
+      x: b.layout?.desktop?.x ?? (i * 3) % 12,
+      y: b.layout?.desktop?.y ?? Math.floor((i * 3) / 12) * 2,
+      w: b.layout?.desktop?.w ?? defaultSize(b.size),
+      h: b.layout?.desktop?.h ?? 6,
+    })),
+    md: visible.map((b, i) => ({
+      i: b.id,
+      x: b.layout?.tablet?.x ?? (i * 4) % 8,
+      y: b.layout?.tablet?.y ?? Math.floor((i * 4) / 8) * 2,
+      w: b.layout?.tablet?.w ?? Math.min(defaultSize(b.size), 8),
+      h: b.layout?.tablet?.h ?? 6,
+    })),
+    sm: visible.map((b, i) => ({
+      i: b.id,
+      x: b.layout?.mobile?.x ?? 0,
+      y: b.layout?.mobile?.y ?? i * 6,
+      w: b.layout?.mobile?.w ?? 4,
+      h: b.layout?.mobile?.h ?? 6,
+    })),
+  };
+
   return (
     <section
       className="mx-auto max-w-[1200px] px-4 sm:px-6 mt-8 sm:mt-10"
@@ -156,22 +213,27 @@ export default function Boxes() {
         background: state.theme.boxesSectionBg,
       }}
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <ResponsiveGridLayout
+        className="layout"
+        layouts={layouts}
+        breakpoints={breakpoints}
+        cols={cols}
+        isResizable={false}
+        isDraggable={false}
+        margin={state.settings?.grid?.margin || [16, 16]}
+        rowHeight={state.settings?.grid?.rowHeight || 20}
+        containerPadding={state.settings?.grid?.containerPadding || [0, 0]}
+        measureBeforeMount
+        useCSSTransforms
+        compactType={null}
+        preventCollision
+      >
         {visible.map((b) => (
-          <div
-            key={b.id}
-            className={cn(
-              b.size === "large"
-                ? "sm:col-span-2 lg:col-span-4"
-                : b.size === "medium"
-                  ? "sm:col-span-1 lg:col-span-2"
-                  : "sm:col-span-1 lg:col-span-1",
-            )}
-          >
+          <div key={b.id}>
             <Box id={b.id} />
           </div>
         ))}
-      </div>
+      </ResponsiveGridLayout>
     </section>
   );
 }

@@ -15,12 +15,21 @@ import {
   Type,
   Smile,
 } from "lucide-react";
+import DOMPurify from "dompurify";
 
 interface RichTextEditorProps {
   value: string;
   onChange: (html: string) => void;
   placeholder?: string;
   className?: string;
+}
+
+function debounce<T extends (...args: any[]) => void>(fn: T, ms = 200) {
+  let t: any;
+  return (...args: Parameters<T>) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
 }
 
 export function RichTextEditor({
@@ -37,6 +46,8 @@ export function RichTextEditor({
     setHtml(value || "");
   }, [value]);
 
+  const safeOnChange = useMemo(() => debounce(onChange, 150), [onChange]);
+
   const focusEditor = () => {
     if (editorRef.current) {
       editorRef.current.focus();
@@ -52,8 +63,11 @@ export function RichTextEditor({
   const updateContent = () => {
     if (editorRef.current) {
       const newHtml = editorRef.current.innerHTML;
-      setHtml(newHtml);
-      onChange(newHtml);
+      const clean = DOMPurify.sanitize(newHtml, {
+        USE_PROFILES: { html: true },
+      });
+      setHtml(clean);
+      safeOnChange(clean);
     }
   };
 
@@ -193,7 +207,7 @@ export function RichTextEditor({
       />
 
       {/* Placeholder styling */}
-      <style jsx>{`
+      <style>{`
         [contenteditable]:empty:before {
           content: attr(data-placeholder);
           color: #9ca3af;

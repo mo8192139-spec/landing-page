@@ -43,9 +43,17 @@ export type BoxShadow = {
   direction: "top-left" | "top-right" | "bottom-left" | "bottom-right";
 };
 
+export type RGLItem = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  i?: string;
+};
 export type Box = {
   id: string;
   title: string;
+  subtitle?: string;
   type: "text" | "image" | "both";
   content?: string; // rich text html
   description?: string; // rich text html
@@ -55,11 +63,13 @@ export type Box = {
   modalStyle?: { bg?: string; text?: string; shadow?: string; radius?: number };
   imageUrl?: string;
   align?: "left" | "center" | "right";
+  vAlign?: "top" | "center" | "bottom";
   size?: "small" | "medium" | "large";
   height?: number; // px
   borderRadius?: number; // px
   shadow?: BoxShadow;
   background?: BoxBackground;
+  layout?: { mobile?: RGLItem; tablet?: RGLItem; desktop?: RGLItem };
   hidden?: boolean;
 };
 export type Logo = { id: string; url: string; href?: string; hidden?: boolean };
@@ -109,6 +119,12 @@ export type SettingsConfig = {
     contact?: number;
   };
   boxHeights?: { small: number; medium: number; large: number };
+  grid?: {
+    cols?: { desktop?: number; tablet?: number; mobile?: number };
+    rowHeight?: number;
+    margin?: [number, number];
+    containerPadding?: [number, number];
+  };
   contactEmail?: string;
 };
 
@@ -170,6 +186,9 @@ function sanitizeConfig(data: SiteConfig): SiteConfig {
       borderRadius: typeof b.borderRadius === "number" ? b.borderRadius : 12,
       shadow: b.shadow || { intensity: 12, direction: "bottom-right" },
       background,
+      align: b.align || "left",
+      vAlign: b.vAlign || "top",
+      layout: b.layout || undefined,
       modalStyle: b.modalStyle
         ? {
             ...b.modalStyle,
@@ -190,6 +209,21 @@ function sanitizeConfig(data: SiteConfig): SiteConfig {
       logosSectionBg: fix(theme.logosSectionBg),
       contactSectionBg: fix(theme.contactSectionBg),
       boxDefaultBg: fix(theme.boxDefaultBg),
+    },
+    settings: {
+      ...data.settings,
+      grid: {
+        cols: {
+          desktop: data.settings?.grid?.cols?.desktop ?? 12,
+          tablet: data.settings?.grid?.cols?.tablet ?? 8,
+          mobile: data.settings?.grid?.cols?.mobile ?? 4,
+        },
+        rowHeight: data.settings?.grid?.rowHeight ?? 20,
+        margin: (data.settings?.grid?.margin as any) ?? [16, 16],
+        containerPadding: (data.settings?.grid?.containerPadding as any) ?? [
+          0, 0,
+        ],
+      },
     },
   } as SiteConfig;
 }
@@ -240,6 +274,7 @@ const DEFAULTS: SiteConfig = {
       modalEnabled: true,
       borderRadius: 12,
       shadow: { intensity: 12, direction: "bottom-right" },
+      subtitle: "",
       modalStyle: {
         bg: "#111111",
         text: "#ffffff",
@@ -262,6 +297,7 @@ const DEFAULTS: SiteConfig = {
       modalEnabled: true,
       borderRadius: 12,
       shadow: { intensity: 12, direction: "bottom-right" },
+      subtitle: "",
       modalStyle: {
         bg: "#111111",
         text: "#ffffff",
@@ -284,6 +320,7 @@ const DEFAULTS: SiteConfig = {
       modalEnabled: true,
       borderRadius: 12,
       shadow: { intensity: 12, direction: "bottom-right" },
+      subtitle: "",
       modalStyle: {
         bg: "#111111",
         text: "#ffffff",
@@ -306,6 +343,7 @@ const DEFAULTS: SiteConfig = {
       modalEnabled: true,
       borderRadius: 12,
       shadow: { intensity: 12, direction: "bottom-right" },
+      subtitle: "",
       modalStyle: {
         bg: "#111111",
         text: "#ffffff",
@@ -328,6 +366,7 @@ const DEFAULTS: SiteConfig = {
       modalEnabled: true,
       borderRadius: 12,
       shadow: { intensity: 12, direction: "bottom-right" },
+      subtitle: "",
       modalStyle: {
         bg: "#111111",
         text: "#ffffff",
@@ -350,6 +389,7 @@ const DEFAULTS: SiteConfig = {
       modalEnabled: true,
       borderRadius: 12,
       shadow: { intensity: 12, direction: "bottom-right" },
+      subtitle: "",
       modalStyle: {
         bg: "#111111",
         text: "#ffffff",
@@ -401,6 +441,12 @@ const DEFAULTS: SiteConfig = {
   settings: {
     sectionPadding: { hero: 24, boxes: 24, logos: 16, contact: 32 },
     boxHeights: { small: 200, medium: 200, large: 280 },
+    grid: {
+      cols: { desktop: 12, tablet: 8, mobile: 4 },
+      rowHeight: 20,
+      margin: [16, 16],
+      containerPadding: [0, 0],
+    },
     contactEmail: "nosahalim13@gmail.com",
   },
 } as SiteConfig;
