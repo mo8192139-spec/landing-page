@@ -43,6 +43,7 @@ export type BoxShadow = {
   direction: "top-left" | "top-right" | "bottom-left" | "bottom-right";
 };
 
+export type RGLItem = { x: number; y: number; w: number; h: number; i?: string };
 export type Box = {
   id: string;
   title: string;
@@ -55,11 +56,13 @@ export type Box = {
   modalStyle?: { bg?: string; text?: string; shadow?: string; radius?: number };
   imageUrl?: string;
   align?: "left" | "center" | "right";
+  vAlign?: "top" | "center" | "bottom";
   size?: "small" | "medium" | "large";
   height?: number; // px
   borderRadius?: number; // px
   shadow?: BoxShadow;
   background?: BoxBackground;
+  layout?: { mobile?: RGLItem; tablet?: RGLItem; desktop?: RGLItem };
   hidden?: boolean;
 };
 export type Logo = { id: string; url: string; href?: string; hidden?: boolean };
@@ -202,7 +205,7 @@ const DEFAULTS: SiteConfig = {
     contactText: "Contact Us",
     languages: [
       { code: "en", label: "English" },
-      { code: "ar", label: "العربية" },
+      { code: "ar", label: "العربي��" },
     ],
     selectedLang: "en",
     background: { kind: "color", color: "#ffffff" },
