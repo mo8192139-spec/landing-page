@@ -153,7 +153,7 @@ export default function Boxes() {
   const defaultSize = (size?: string) =>
     size === "large" ? 12 : size === "medium" ? 6 : 3;
 
-  const layouts: RGL.Layouts = {
+  const layouts: Layouts = {
     lg: visible.map((b, i) => ({
       i: b.id,
       x: b.layout?.desktop?.x ?? ((i * 3) % 12),
