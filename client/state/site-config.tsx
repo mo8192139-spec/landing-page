@@ -43,7 +43,13 @@ export type BoxShadow = {
   direction: "top-left" | "top-right" | "bottom-left" | "bottom-right";
 };
 
-export type RGLItem = { x: number; y: number; w: number; h: number; i?: string };
+export type RGLItem = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  i?: string;
+};
 export type Box = {
   id: string;
   title: string;
@@ -214,7 +220,9 @@ function sanitizeConfig(data: SiteConfig): SiteConfig {
         },
         rowHeight: data.settings?.grid?.rowHeight ?? 20,
         margin: (data.settings?.grid?.margin as any) ?? [16, 16],
-        containerPadding: (data.settings?.grid?.containerPadding as any) ?? [0, 0],
+        containerPadding: (data.settings?.grid?.containerPadding as any) ?? [
+          0, 0,
+        ],
       },
     },
   } as SiteConfig;

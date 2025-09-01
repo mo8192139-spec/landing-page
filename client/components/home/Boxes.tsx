@@ -74,24 +74,41 @@ function Box({ id }: BoxProps) {
           <div
             className={cn(
               "p-4 bg-white/90 backdrop-blur-[1px] flex flex-col",
-              box.vAlign === "center" ? "justify-center" : box.vAlign === "bottom" ? "justify-end" : "justify-start",
-              box.align === "center" ? "items-center text-center" : box.align === "right" ? "items-end text-right" : "items-start text-left",
+              box.vAlign === "center"
+                ? "justify-center"
+                : box.vAlign === "bottom"
+                  ? "justify-end"
+                  : "justify-start",
+              box.align === "center"
+                ? "items-center text-center"
+                : box.align === "right"
+                  ? "items-end text-right"
+                  : "items-start text-left",
             )}
           >
             <div className="text-base font-semibold text-neutral-900">
               {box.title}
             </div>
             {box.subtitle && (
-              <div className="text-sm text-neutral-600 mt-0.5">{box.subtitle}</div>
+              <div className="text-sm text-neutral-600 mt-0.5">
+                {box.subtitle}
+              </div>
             )}
             <div className="mt-3 flex items-center gap-2">
-              {(box.ctaMode === "button" || box.ctaMode === "both" || !box.ctaMode) && (
+              {(box.ctaMode === "button" ||
+                box.ctaMode === "both" ||
+                !box.ctaMode) && (
                 <span className="inline-flex items-center px-3 py-2 text-sm rounded-md bg-brand-600 text-white shadow group-hover:bg-brand-500 transition-colors">
                   {box.buttonLabel || "Read More"}
                 </span>
               )}
               {(box.ctaMode === "icon" || box.ctaMode === "both") && (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-brand-600">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="h-5 w-5 text-brand-600"
+                >
                   <path d="M13.5 4.5a.75.75 0 0 1 .75-.75h5.25a.75.75 0 0 1 .75.75v5.25a.75.75 0 0 1-1.5 0V6.31l-7.72 7.72a.75.75 0 1 1-1.06-1.06l7.72-7.72h-3.44a.75.75 0 0 1-.75-.75Z" />
                   <path d="M3 6.75A2.25 2.25 0 0 1 5.25 4.5h5.5a.75.75 0 0 1 0 1.5h-5.5a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h12.5a.75.75 0 0 0 .75-.75v-5.5a.75.75 0 0 1 1.5 0v5.5A2.25 2.25 0 0 1 17.75 21H5.25A2.25 2.25 0 0 1 3 18.75V6.75Z" />
                 </svg>
@@ -157,19 +174,23 @@ export default function Boxes() {
   };
   const breakpoints = { lg: 1200, md: 996, sm: 0 };
   const defaultSize = (size?: string) =>
-    size === "large" ? cols.lg : size === "medium" ? Math.ceil(cols.lg / 2) : Math.ceil(cols.lg / 4);
+    size === "large"
+      ? cols.lg
+      : size === "medium"
+        ? Math.ceil(cols.lg / 2)
+        : Math.ceil(cols.lg / 4);
 
   const layouts: Layouts = {
     lg: visible.map((b, i) => ({
       i: b.id,
-      x: b.layout?.desktop?.x ?? ((i * 3) % 12),
+      x: b.layout?.desktop?.x ?? (i * 3) % 12,
       y: b.layout?.desktop?.y ?? Math.floor((i * 3) / 12) * 2,
       w: b.layout?.desktop?.w ?? defaultSize(b.size),
       h: b.layout?.desktop?.h ?? 6,
     })),
     md: visible.map((b, i) => ({
       i: b.id,
-      x: b.layout?.tablet?.x ?? ((i * 4) % 8),
+      x: b.layout?.tablet?.x ?? (i * 4) % 8,
       y: b.layout?.tablet?.y ?? Math.floor((i * 4) / 8) * 2,
       w: b.layout?.tablet?.w ?? Math.min(defaultSize(b.size), 8),
       h: b.layout?.tablet?.h ?? 6,

@@ -33,7 +33,9 @@ function expandShortHex(hex?: string): string | undefined {
 
 export default function BoxesAdmin() {
   const { state, set } = useSiteConfig();
-  const [drafts, setDrafts] = useState(() => state.boxes.map((b) => ({ ...b })));
+  const [drafts, setDrafts] = useState(() =>
+    state.boxes.map((b) => ({ ...b })),
+  );
 
   useEffect(() => {
     setDrafts(state.boxes.map((b) => ({ ...b })));
@@ -68,7 +70,11 @@ export default function BoxesAdmin() {
   const duplicate = (id: string) => {
     const src = state.boxes.find((b) => b.id === id);
     if (!src) return;
-    const copy = { ...src, id: crypto.randomUUID(), title: src.title + " (copy)" };
+    const copy = {
+      ...src,
+      id: crypto.randomUUID(),
+      title: src.title + " (copy)",
+    };
     set({ boxes: [...state.boxes, copy] });
   };
 
@@ -96,9 +102,14 @@ export default function BoxesAdmin() {
     });
   };
 
-  const remove = (id: string) => set({ boxes: state.boxes.filter((b) => b.id !== id) });
+  const remove = (id: string) =>
+    set({ boxes: state.boxes.filter((b) => b.id !== id) });
   const toggle = (id: string) =>
-    set({ boxes: state.boxes.map((b) => (b.id === id ? { ...b, hidden: !b.hidden } : b)) });
+    set({
+      boxes: state.boxes.map((b) =>
+        b.id === id ? { ...b, hidden: !b.hidden } : b,
+      ),
+    });
 
   const apply = (id: string) => {
     const draft = drafts.find((d) => d.id === id);
@@ -113,19 +124,20 @@ export default function BoxesAdmin() {
 
   const cols = { lg: 12, md: 8, sm: 4 } as const;
   const breakpoints = { lg: 1200, md: 996, sm: 0 } as const;
-  const defaultSize = (size?: string) => (size === "large" ? 12 : size === "medium" ? 6 : 3);
+  const defaultSize = (size?: string) =>
+    size === "large" ? 12 : size === "medium" ? 6 : 3;
 
   const layouts = {
     lg: state.boxes.map((b, i) => ({
       i: b.id,
-      x: b.layout?.desktop?.x ?? ((i * 3) % 12),
+      x: b.layout?.desktop?.x ?? (i * 3) % 12,
       y: b.layout?.desktop?.y ?? Math.floor((i * 3) / 12) * 2,
       w: b.layout?.desktop?.w ?? defaultSize(b.size),
       h: b.layout?.desktop?.h ?? 6,
     })),
     md: state.boxes.map((b, i) => ({
       i: b.id,
-      x: b.layout?.tablet?.x ?? ((i * 4) % 8),
+      x: b.layout?.tablet?.x ?? (i * 4) % 8,
       y: b.layout?.tablet?.y ?? Math.floor((i * 4) / 8) * 2,
       w: b.layout?.tablet?.w ?? Math.min(defaultSize(b.size), 8),
       h: b.layout?.tablet?.h ?? 6,
@@ -140,7 +152,8 @@ export default function BoxesAdmin() {
   } as const;
 
   const handleLayoutChange = (_current: any, nextLayouts: any) => {
-    const byId = (list: any[]) => Object.fromEntries(list.map((l) => [l.i, l] as const));
+    const byId = (list: any[]) =>
+      Object.fromEntries(list.map((l) => [l.i, l] as const));
     const lg = byId(nextLayouts.lg || []);
     const md = byId(nextLayouts.md || []);
     const sm = byId(nextLayouts.sm || []);
@@ -163,7 +176,11 @@ export default function BoxesAdmin() {
   };
 
   const items = useMemo(
-    () => state.boxes.map((b) => ({ live: b, draft: drafts.find((d) => d.id === b.id) || b })),
+    () =>
+      state.boxes.map((b) => ({
+        live: b,
+        draft: drafts.find((d) => d.id === b.id) || b,
+      })),
     [state.boxes, drafts],
   );
 
@@ -175,76 +192,216 @@ export default function BoxesAdmin() {
         action={
           <div className="flex items-center gap-3">
             <div className="text-sm text-gray-600">
-              {state.boxes.filter((b) => !b.hidden).length} visible / {state.boxes.length} total
+              {state.boxes.filter((b) => !b.hidden).length} visible /{" "}
+              {state.boxes.length} total
             </div>
             <AdminButton onClick={add}>
               <Plus className="h-4 w-4 mr-2" /> Add Box
             </AdminButton>
-            <AdminButton variant="secondary" onClick={applyAll}>Apply All Changes</AdminButton>
-            <label className="text-sm px-3 py-2 border rounded-lg cursor-pointer">Import JSON
-              <input type="file" accept="application/json" className="hidden" onChange={async (e) => {
-                const f = e.target.files?.[0]; if (!f) return;
-                const text = await f.text();
-                try { const parsed = JSON.parse(text);
-                  const next = { ...state } as any;
-                  if (parsed.boxes) next.boxes = parsed.boxes;
-                  if (parsed.settings?.grid) next.settings = { ...(state.settings||{}), grid: parsed.settings.grid };
-                  set(next);
-                } catch (err) { console.error("Invalid JSON", err); }
-              }} />
+            <AdminButton variant="secondary" onClick={applyAll}>
+              Apply All Changes
+            </AdminButton>
+            <label className="text-sm px-3 py-2 border rounded-lg cursor-pointer">
+              Import JSON
+              <input
+                type="file"
+                accept="application/json"
+                className="hidden"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  const text = await f.text();
+                  try {
+                    const parsed = JSON.parse(text);
+                    const next = { ...state } as any;
+                    if (parsed.boxes) next.boxes = parsed.boxes;
+                    if (parsed.settings?.grid)
+                      next.settings = {
+                        ...(state.settings || {}),
+                        grid: parsed.settings.grid,
+                      };
+                    set(next);
+                  } catch (err) {
+                    console.error("Invalid JSON", err);
+                  }
+                }}
+              />
             </label>
-            <AdminButton onClick={() => {
-              const data = JSON.stringify({ boxes: state.boxes, settings: { grid: state.settings?.grid } }, null, 2);
-              const blob = new Blob([data], { type: 'application/json' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url; a.download = 'boxes-config.json'; a.click(); URL.revokeObjectURL(url);
-            }}>Export JSON</AdminButton>
+            <AdminButton
+              onClick={() => {
+                const data = JSON.stringify(
+                  {
+                    boxes: state.boxes,
+                    settings: { grid: state.settings?.grid },
+                  },
+                  null,
+                  2,
+                );
+                const blob = new Blob([data], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "boxes-config.json";
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              Export JSON
+            </AdminButton>
           </div>
         }
       />
 
-      <AdminSection title="Global Grid Settings" description="Configure columns and spacing per device.">
+      <AdminSection
+        title="Global Grid Settings"
+        description="Configure columns and spacing per device."
+      >
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="space-y-2">
             <label className="text-sm">Desktop Columns</label>
-            <input type="number" min={1} max={24} value={state.settings?.grid?.cols?.desktop ?? 12}
-              onChange={(e) => set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), cols: { ...(state.settings?.grid?.cols||{}), desktop: Number(e.target.value) } } } })}
-              className="border rounded px-2 py-1 text-sm" />
+            <input
+              type="number"
+              min={1}
+              max={24}
+              value={state.settings?.grid?.cols?.desktop ?? 12}
+              onChange={(e) =>
+                set({
+                  settings: {
+                    ...state.settings,
+                    grid: {
+                      ...(state.settings?.grid || {}),
+                      cols: {
+                        ...(state.settings?.grid?.cols || {}),
+                        desktop: Number(e.target.value),
+                      },
+                    },
+                  },
+                })
+              }
+              className="border rounded px-2 py-1 text-sm"
+            />
           </div>
           <div className="space-y-2">
             <label className="text-sm">Tablet Columns</label>
-            <input type="number" min={1} max={24} value={state.settings?.grid?.cols?.tablet ?? 8}
-              onChange={(e) => set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), cols: { ...(state.settings?.grid?.cols||{}), tablet: Number(e.target.value) } } } })}
-              className="border rounded px-2 py-1 text-sm" />
+            <input
+              type="number"
+              min={1}
+              max={24}
+              value={state.settings?.grid?.cols?.tablet ?? 8}
+              onChange={(e) =>
+                set({
+                  settings: {
+                    ...state.settings,
+                    grid: {
+                      ...(state.settings?.grid || {}),
+                      cols: {
+                        ...(state.settings?.grid?.cols || {}),
+                        tablet: Number(e.target.value),
+                      },
+                    },
+                  },
+                })
+              }
+              className="border rounded px-2 py-1 text-sm"
+            />
           </div>
           <div className="space-y-2">
             <label className="text-sm">Mobile Columns</label>
-            <input type="number" min={1} max={12} value={state.settings?.grid?.cols?.mobile ?? 4}
-              onChange={(e) => set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), cols: { ...(state.settings?.grid?.cols||{}), mobile: Number(e.target.value) } } } })}
-              className="border rounded px-2 py-1 text-sm" />
+            <input
+              type="number"
+              min={1}
+              max={12}
+              value={state.settings?.grid?.cols?.mobile ?? 4}
+              onChange={(e) =>
+                set({
+                  settings: {
+                    ...state.settings,
+                    grid: {
+                      ...(state.settings?.grid || {}),
+                      cols: {
+                        ...(state.settings?.grid?.cols || {}),
+                        mobile: Number(e.target.value),
+                      },
+                    },
+                  },
+                })
+              }
+              className="border rounded px-2 py-1 text-sm"
+            />
           </div>
           <div className="space-y-2">
             <label className="text-sm">Row Height</label>
-            <input type="number" min={8} max={80} value={state.settings?.grid?.rowHeight ?? 20}
-              onChange={(e) => set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), rowHeight: Number(e.target.value) } } })}
-              className="border rounded px-2 py-1 text-sm" />
+            <input
+              type="number"
+              min={8}
+              max={80}
+              value={state.settings?.grid?.rowHeight ?? 20}
+              onChange={(e) =>
+                set({
+                  settings: {
+                    ...state.settings,
+                    grid: {
+                      ...(state.settings?.grid || {}),
+                      rowHeight: Number(e.target.value),
+                    },
+                  },
+                })
+              }
+              className="border rounded px-2 py-1 text-sm"
+            />
           </div>
           <div className="space-y-2">
             <label className="text-sm">Margin (px)</label>
             <div className="flex items-center gap-2">
-              <input type="number" min={0} max={64} value={(state.settings?.grid?.margin||[16,16])[0]}
-                onChange={(e) => { const m = (state.settings?.grid?.margin||[16,16]) as [number,number]; const v:[number,number]=[Number(e.target.value), m[1]]; set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), margin: v } } }); }}
-                className="border rounded px-2 py-1 text-sm w-24" />
-              <input type="number" min={0} max={64} value={(state.settings?.grid?.margin||[16,16])[1]}
-                onChange={(e) => { const m = (state.settings?.grid?.margin||[16,16]) as [number,number]; const v:[number,number]=[m[0], Number(e.target.value)]; set({ settings: { ...state.settings, grid: { ...(state.settings?.grid||{}), margin: v } } }); }}
-                className="border rounded px-2 py-1 text-sm w-24" />
+              <input
+                type="number"
+                min={0}
+                max={64}
+                value={(state.settings?.grid?.margin || [16, 16])[0]}
+                onChange={(e) => {
+                  const m = (state.settings?.grid?.margin || [16, 16]) as [
+                    number,
+                    number,
+                  ];
+                  const v: [number, number] = [Number(e.target.value), m[1]];
+                  set({
+                    settings: {
+                      ...state.settings,
+                      grid: { ...(state.settings?.grid || {}), margin: v },
+                    },
+                  });
+                }}
+                className="border rounded px-2 py-1 text-sm w-24"
+              />
+              <input
+                type="number"
+                min={0}
+                max={64}
+                value={(state.settings?.grid?.margin || [16, 16])[1]}
+                onChange={(e) => {
+                  const m = (state.settings?.grid?.margin || [16, 16]) as [
+                    number,
+                    number,
+                  ];
+                  const v: [number, number] = [m[0], Number(e.target.value)];
+                  set({
+                    settings: {
+                      ...state.settings,
+                      grid: { ...(state.settings?.grid || {}), margin: v },
+                    },
+                  });
+                }}
+                className="border rounded px-2 py-1 text-sm w-24"
+              />
             </div>
           </div>
         </div>
       </AdminSection>
 
-      <AdminSection title="Layout Designer" description="Drag to move, resize from corners. Responsive layouts for desktop/tablet/mobile are stored.">
+      <AdminSection
+        title="Layout Designer"
+        description="Drag to move, resize from corners. Responsive layouts for desktop/tablet/mobile are stored."
+      >
         <ResponsiveGridLayout
           className="layout"
           layouts={layouts as any}
@@ -262,26 +419,47 @@ export default function BoxesAdmin() {
           onLayoutChange={handleLayoutChange}
         >
           {state.boxes.map((b) => (
-            <div key={b.id} className="border rounded-lg bg-white shadow-sm overflow-hidden">
+            <div
+              key={b.id}
+              className="border rounded-lg bg-white shadow-sm overflow-hidden"
+            >
               <div className="p-3 flex items-center justify-between">
                 <div className="truncate font-medium text-sm">{b.title}</div>
                 <div className="flex items-center gap-1">
-                  <AdminIconButton title="Duplicate" onClick={() => duplicate(b.id)}>
+                  <AdminIconButton
+                    title="Duplicate"
+                    onClick={() => duplicate(b.id)}
+                  >
                     <Copy className="h-4 w-4" />
                   </AdminIconButton>
-                  <AdminIconButton title={b.hidden ? "Show" : "Hide"} onClick={() => toggle(b.id)}>
-                    {b.hidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                  <AdminIconButton
+                    title={b.hidden ? "Show" : "Hide"}
+                    onClick={() => toggle(b.id)}
+                  >
+                    {b.hidden ? (
+                      <Eye className="h-4 w-4" />
+                    ) : (
+                      <EyeOff className="h-4 w-4" />
+                    )}
                   </AdminIconButton>
                   <AdminIconButton title="Reset" onClick={() => resetBox(b.id)}>
                     <RotateCcw className="h-4 w-4" />
                   </AdminIconButton>
-                  <AdminIconButton variant="danger" title="Delete" onClick={() => remove(b.id)}>
+                  <AdminIconButton
+                    variant="danger"
+                    title="Delete"
+                    onClick={() => remove(b.id)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </AdminIconButton>
                 </div>
               </div>
               {b.imageUrl && (
-                <img src={b.imageUrl} alt="preview" className="w-full h-24 object-cover" />
+                <img
+                  src={b.imageUrl}
+                  alt="preview"
+                  className="w-full h-24 object-cover"
+                />
               )}
             </div>
           ))}
@@ -305,16 +483,37 @@ export default function BoxesAdmin() {
                 min={120}
                 max={600}
                 value={draft.height || 200}
-                onChange={(e) => setDraft(live.id, { height: Number(e.target.value) })}
+                onChange={(e) =>
+                  setDraft(live.id, { height: Number(e.target.value) })
+                }
                 className="w-24 border rounded px-2 py-1 text-sm"
               />
-              <AdminIconButton variant="secondary" size="small" onClick={() => toggle(live.id)} title={live.hidden ? "Show box" : "Hide box"}>
-                {live.hidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+              <AdminIconButton
+                variant="secondary"
+                size="small"
+                onClick={() => toggle(live.id)}
+                title={live.hidden ? "Show box" : "Hide box"}
+              >
+                {live.hidden ? (
+                  <Eye className="h-3 w-3" />
+                ) : (
+                  <EyeOff className="h-3 w-3" />
+                )}
               </AdminIconButton>
-              <AdminIconButton variant="ghost" size="small" onClick={() => duplicate(live.id)} title="Duplicate">
+              <AdminIconButton
+                variant="ghost"
+                size="small"
+                onClick={() => duplicate(live.id)}
+                title="Duplicate"
+              >
                 <Copy className="h-3 w-3" />
               </AdminIconButton>
-              <AdminIconButton variant="danger" size="small" onClick={() => remove(live.id)} title="Delete box">
+              <AdminIconButton
+                variant="danger"
+                size="small"
+                onClick={() => remove(live.id)}
+                title="Delete box"
+              >
                 <Trash2 className="h-3 w-3" />
               </AdminIconButton>
             </div>
@@ -323,7 +522,11 @@ export default function BoxesAdmin() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   {draft.imageUrl && (
-                    <img src={draft.imageUrl} alt="preview" className="h-14 w-24 object-cover rounded" />
+                    <img
+                      src={draft.imageUrl}
+                      alt="preview"
+                      className="h-14 w-24 object-cover rounded"
+                    />
                   )}
                   <label className="text-xs px-2 py-1 rounded bg-neutral-800 text-white cursor-pointer">
                     Upload Image
@@ -350,7 +553,9 @@ export default function BoxesAdmin() {
                   <label className="text-sm">Subtitle</label>
                   <input
                     value={draft.subtitle || ""}
-                    onChange={(e) => setDraft(live.id, { subtitle: e.target.value })}
+                    onChange={(e) =>
+                      setDraft(live.id, { subtitle: e.target.value })
+                    }
                     className="w-full border rounded px-2 py-1 text-sm"
                   />
                 </div>
@@ -360,7 +565,9 @@ export default function BoxesAdmin() {
                   <div className="flex items-center gap-2">
                     <select
                       value={draft.align || "left"}
-                      onChange={(e) => setDraft(live.id, { align: e.target.value as any })}
+                      onChange={(e) =>
+                        setDraft(live.id, { align: e.target.value as any })
+                      }
                       className="border rounded px-2 py-1 text-sm"
                     >
                       <option value="left">Left</option>
@@ -369,7 +576,9 @@ export default function BoxesAdmin() {
                     </select>
                     <select
                       value={draft.vAlign || "top"}
-                      onChange={(e) => setDraft(live.id, { vAlign: e.target.value as any })}
+                      onChange={(e) =>
+                        setDraft(live.id, { vAlign: e.target.value as any })
+                      }
                       className="border rounded px-2 py-1 text-sm"
                     >
                       <option value="top">Top</option>
@@ -383,7 +592,9 @@ export default function BoxesAdmin() {
                   <label className="text-sm">CTA Mode</label>
                   <select
                     value={draft.ctaMode || "button"}
-                    onChange={(e) => setDraft(live.id, { ctaMode: e.target.value as any })}
+                    onChange={(e) =>
+                      setDraft(live.id, { ctaMode: e.target.value as any })
+                    }
                     className="border rounded px-2 py-1 text-sm"
                   >
                     <option value="button">Button only</option>
@@ -396,15 +607,20 @@ export default function BoxesAdmin() {
                   <label className="text-sm">Button Label</label>
                   <input
                     value={draft.buttonLabel || "Read More"}
-                    onChange={(e) => setDraft(live.id, { buttonLabel: e.target.value })}
+                    onChange={(e) =>
+                      setDraft(live.id, { buttonLabel: e.target.value })
+                    }
                     className="w-full border rounded px-2 py-1 text-sm"
                   />
                   <label className="text-sm flex items-center gap-2">
                     <input
                       type="checkbox"
                       checked={draft.modalEnabled !== false}
-                      onChange={(e) => setDraft(live.id, { modalEnabled: e.target.checked })}
-                    /> Enable Modal
+                      onChange={(e) =>
+                        setDraft(live.id, { modalEnabled: e.target.checked })
+                      }
+                    />{" "}
+                    Enable Modal
                   </label>
                 </div>
 
@@ -415,7 +631,11 @@ export default function BoxesAdmin() {
                     min={0}
                     max={28}
                     value={draft.borderRadius ?? 12}
-                    onChange={(e) => setDraft(live.id, { borderRadius: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setDraft(live.id, {
+                        borderRadius: Number(e.target.value),
+                      })
+                    }
                   />
                 </div>
 
@@ -424,7 +644,14 @@ export default function BoxesAdmin() {
                   <div className="flex items-center gap-2">
                     <select
                       value={draft.shadow?.direction || "bottom-right"}
-                      onChange={(e) => setDraft(live.id, { shadow: { ...(draft.shadow || { intensity: 12 }), direction: e.target.value as any } })}
+                      onChange={(e) =>
+                        setDraft(live.id, {
+                          shadow: {
+                            ...(draft.shadow || { intensity: 12 }),
+                            direction: e.target.value as any,
+                          },
+                        })
+                      }
                       className="border rounded px-2 py-1 text-sm"
                     >
                       <option value="top-left">Top Left</option>
@@ -437,7 +664,14 @@ export default function BoxesAdmin() {
                       min={0}
                       max={30}
                       value={draft.shadow?.intensity ?? 12}
-                      onChange={(e) => setDraft(live.id, { shadow: { ...(draft.shadow || { direction: "bottom-right" }), intensity: Number(e.target.value) } })}
+                      onChange={(e) =>
+                        setDraft(live.id, {
+                          shadow: {
+                            ...(draft.shadow || { direction: "bottom-right" }),
+                            intensity: Number(e.target.value),
+                          },
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -453,8 +687,23 @@ export default function BoxesAdmin() {
                             e.target.value === "color"
                               ? { kind: "color", color: "#f3f4f6" }
                               : e.target.value === "gradient"
-                                ? { kind: "gradient", from: "#ffffff", to: "#f3f4f6", direction: "to bottom" }
-                                : ({ kind: "image", url: (draft.background && (draft.background as any).url) || "", scale: 100, opacity: 1, overlay: "none", overlayStrength: 0.4 } as any),
+                                ? {
+                                    kind: "gradient",
+                                    from: "#ffffff",
+                                    to: "#f3f4f6",
+                                    direction: "to bottom",
+                                  }
+                                : ({
+                                    kind: "image",
+                                    url:
+                                      (draft.background &&
+                                        (draft.background as any).url) ||
+                                      "",
+                                    scale: 100,
+                                    opacity: 1,
+                                    overlay: "none",
+                                    overlayStrength: 0.4,
+                                  } as any),
                         })
                       }
                       className="border rounded px-2 py-1 text-sm"
@@ -469,7 +718,12 @@ export default function BoxesAdmin() {
                         value={(draft.background as any).color || "#f3f4f6"}
                         onChange={(e) =>
                           setDraft(live.id, {
-                            background: { kind: "color", color: expandShortHex(e.target.value) || e.target.value } as any,
+                            background: {
+                              kind: "color",
+                              color:
+                                expandShortHex(e.target.value) ||
+                                e.target.value,
+                            } as any,
                           })
                         }
                       />
@@ -480,20 +734,41 @@ export default function BoxesAdmin() {
                           type="color"
                           value={(draft.background as any).from || "#ffffff"}
                           onChange={(e) =>
-                            setDraft(live.id, { background: { ...(draft.background as any), from: expandShortHex(e.target.value) || e.target.value } as any })
+                            setDraft(live.id, {
+                              background: {
+                                ...(draft.background as any),
+                                from:
+                                  expandShortHex(e.target.value) ||
+                                  e.target.value,
+                              } as any,
+                            })
                           }
                         />
                         <input
                           type="color"
                           value={(draft.background as any).to || "#f3f4f6"}
                           onChange={(e) =>
-                            setDraft(live.id, { background: { ...(draft.background as any), to: expandShortHex(e.target.value) || e.target.value } as any })
+                            setDraft(live.id, {
+                              background: {
+                                ...(draft.background as any),
+                                to:
+                                  expandShortHex(e.target.value) ||
+                                  e.target.value,
+                              } as any,
+                            })
                           }
                         />
                         <select
-                          value={(draft.background as any).direction || "to bottom"}
+                          value={
+                            (draft.background as any).direction || "to bottom"
+                          }
                           onChange={(e) =>
-                            setDraft(live.id, { background: { ...(draft.background as any), direction: e.target.value } as any })
+                            setDraft(live.id, {
+                              background: {
+                                ...(draft.background as any),
+                                direction: e.target.value,
+                              } as any,
+                            })
                           }
                           className="border rounded px-2 py-1 text-sm"
                         >
@@ -503,7 +778,9 @@ export default function BoxesAdmin() {
                           <option value="to right">to right</option>
                           <option value="to top right">to top right</option>
                           <option value="to top left">to top left</option>
-                          <option value="to bottom right">to bottom right</option>
+                          <option value="to bottom right">
+                            to bottom right
+                          </option>
                           <option value="to bottom left">to bottom left</option>
                         </select>
                       </div>
@@ -511,7 +788,11 @@ export default function BoxesAdmin() {
                     {draft.background?.kind === "image" && (
                       <div className="space-y-2 w-full">
                         {(draft.background as any).url && (
-                          <img src={(draft.background as any).url} alt="bg" className="h-14 w-24 object-cover rounded" />
+                          <img
+                            src={(draft.background as any).url}
+                            alt="bg"
+                            className="h-14 w-24 object-cover rounded"
+                          />
                         )}
                         <label className="text-xs px-2 py-1 rounded bg-neutral-800 text-white cursor-pointer inline-block">
                           Upload Background
@@ -522,15 +803,24 @@ export default function BoxesAdmin() {
                             onChange={async (e) => {
                               const f = e.target.files?.[0];
                               if (!f) return;
-                              const url = await new Promise<string>((res, rej) => {
-                                const r = new FileReader();
-                                r.onload = () => res(r.result as string);
-                                r.onerror = rej;
-                                r.readAsDataURL(f);
-                              });
+                              const url = await new Promise<string>(
+                                (res, rej) => {
+                                  const r = new FileReader();
+                                  r.onload = () => res(r.result as string);
+                                  r.onerror = rej;
+                                  r.readAsDataURL(f);
+                                },
+                              );
                               const bg = draft.background as any;
                               setDraft(live.id, {
-                                background: { kind: "image", url, scale: bg?.scale || 100, opacity: bg?.opacity ?? 1, overlay: bg?.overlay || "none", overlayStrength: bg?.overlayStrength ?? 0.4 } as any,
+                                background: {
+                                  kind: "image",
+                                  url,
+                                  scale: bg?.scale || 100,
+                                  opacity: bg?.opacity ?? 1,
+                                  overlay: bg?.overlay || "none",
+                                  overlayStrength: bg?.overlayStrength ?? 0.4,
+                                } as any,
                               });
                             }}
                           />
@@ -542,7 +832,14 @@ export default function BoxesAdmin() {
                             min={50}
                             max={200}
                             value={(draft.background as any).scale || 100}
-                            onChange={(e) => setDraft(live.id, { background: { ...(draft.background as any), scale: Number(e.target.value) } as any })}
+                            onChange={(e) =>
+                              setDraft(live.id, {
+                                background: {
+                                  ...(draft.background as any),
+                                  scale: Number(e.target.value),
+                                } as any,
+                              })
+                            }
                           />
                         </div>
                         <div className="flex items-center gap-2">
@@ -553,14 +850,28 @@ export default function BoxesAdmin() {
                             max={1}
                             step={0.05}
                             value={(draft.background as any).opacity ?? 1}
-                            onChange={(e) => setDraft(live.id, { background: { ...(draft.background as any), opacity: Number(e.target.value) } as any })}
+                            onChange={(e) =>
+                              setDraft(live.id, {
+                                background: {
+                                  ...(draft.background as any),
+                                  opacity: Number(e.target.value),
+                                } as any,
+                              })
+                            }
                           />
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs w-16">Adjust</span>
                           <select
                             value={(draft.background as any).overlay || "none"}
-                            onChange={(e) => setDraft(live.id, { background: { ...(draft.background as any), overlay: e.target.value as any } as any })}
+                            onChange={(e) =>
+                              setDraft(live.id, {
+                                background: {
+                                  ...(draft.background as any),
+                                  overlay: e.target.value as any,
+                                } as any,
+                              })
+                            }
                             className="border rounded px-2 py-1 text-sm"
                           >
                             <option value="none">None</option>
@@ -572,8 +883,17 @@ export default function BoxesAdmin() {
                             min={0}
                             max={1}
                             step={0.05}
-                            value={(draft.background as any).overlayStrength ?? 0.4}
-                            onChange={(e) => setDraft(live.id, { background: { ...(draft.background as any), overlayStrength: Number(e.target.value) } as any })}
+                            value={
+                              (draft.background as any).overlayStrength ?? 0.4
+                            }
+                            onChange={(e) =>
+                              setDraft(live.id, {
+                                background: {
+                                  ...(draft.background as any),
+                                  overlayStrength: Number(e.target.value),
+                                } as any,
+                              })
+                            }
                           />
                         </div>
                       </div>
@@ -590,13 +910,29 @@ export default function BoxesAdmin() {
                     <input
                       type="color"
                       value={expandShortHex(draft.modalStyle?.bg) || "#111111"}
-                      onChange={(e) => setDraft(live.id, { modalStyle: { ...draft.modalStyle, bg: expandShortHex(e.target.value) } })}
+                      onChange={(e) =>
+                        setDraft(live.id, {
+                          modalStyle: {
+                            ...draft.modalStyle,
+                            bg: expandShortHex(e.target.value),
+                          },
+                        })
+                      }
                     />
                     <span className="text-xs">Text</span>
                     <input
                       type="color"
-                      value={expandShortHex(draft.modalStyle?.text) || "#ffffff"}
-                      onChange={(e) => setDraft(live.id, { modalStyle: { ...draft.modalStyle, text: expandShortHex(e.target.value) } })}
+                      value={
+                        expandShortHex(draft.modalStyle?.text) || "#ffffff"
+                      }
+                      onChange={(e) =>
+                        setDraft(live.id, {
+                          modalStyle: {
+                            ...draft.modalStyle,
+                            text: expandShortHex(e.target.value),
+                          },
+                        })
+                      }
                     />
                     <span className="text-xs">Radius</span>
                     <input
@@ -604,12 +940,28 @@ export default function BoxesAdmin() {
                       min={0}
                       max={28}
                       value={draft.modalStyle?.radius || 16}
-                      onChange={(e) => setDraft(live.id, { modalStyle: { ...draft.modalStyle, radius: Number(e.target.value) } })}
+                      onChange={(e) =>
+                        setDraft(live.id, {
+                          modalStyle: {
+                            ...draft.modalStyle,
+                            radius: Number(e.target.value),
+                          },
+                        })
+                      }
                     />
                   </div>
                   <input
-                    value={draft.modalStyle?.shadow || "0 10px 30px rgba(0,0,0,0.3)"}
-                    onChange={(e) => setDraft(live.id, { modalStyle: { ...draft.modalStyle, shadow: e.target.value } })}
+                    value={
+                      draft.modalStyle?.shadow || "0 10px 30px rgba(0,0,0,0.3)"
+                    }
+                    onChange={(e) =>
+                      setDraft(live.id, {
+                        modalStyle: {
+                          ...draft.modalStyle,
+                          shadow: e.target.value,
+                        },
+                      })
+                    }
                     className="w-full border rounded px-2 py-1 text-xs"
                     placeholder="CSS box-shadow"
                   />
@@ -622,15 +974,25 @@ export default function BoxesAdmin() {
                 />
 
                 <div className="flex items-center justify-end gap-2">
-                  <AdminButton onClick={() => resetBox(live.id)} variant="secondary">Reset</AdminButton>
-                  <AdminButton onClick={() => apply(live.id)} variant="primary">Apply Changes</AdminButton>
+                  <AdminButton
+                    onClick={() => resetBox(live.id)}
+                    variant="secondary"
+                  >
+                    Reset
+                  </AdminButton>
+                  <AdminButton onClick={() => apply(live.id)} variant="primary">
+                    Apply Changes
+                  </AdminButton>
                 </div>
               </div>
             </div>
           </AdminCard>
         ))}
       </div>
-      <div className="text-sm text-neutral-600 mt-3">Drag and resize in the layout designer above. Text and style changes require Apply.</div>
+      <div className="text-sm text-neutral-600 mt-3">
+        Drag and resize in the layout designer above. Text and style changes
+        require Apply.
+      </div>
     </div>
   );
 }

@@ -63,7 +63,9 @@ export function RichTextEditor({
   const updateContent = () => {
     if (editorRef.current) {
       const newHtml = editorRef.current.innerHTML;
-      const clean = DOMPurify.sanitize(newHtml, { USE_PROFILES: { html: true } });
+      const clean = DOMPurify.sanitize(newHtml, {
+        USE_PROFILES: { html: true },
+      });
       setHtml(clean);
       safeOnChange(clean);
     }
