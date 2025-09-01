@@ -148,10 +148,14 @@ export default function Boxes() {
   const visible = state.boxes.filter((b) => !b.hidden);
   const pad = state.settings?.sectionPadding?.boxes ?? 24;
 
-  const cols = { lg: 12, md: 8, sm: 4 };
+  const cols = {
+    lg: state.settings?.grid?.cols?.desktop ?? 12,
+    md: state.settings?.grid?.cols?.tablet ?? 8,
+    sm: state.settings?.grid?.cols?.mobile ?? 4,
+  };
   const breakpoints = { lg: 1200, md: 996, sm: 0 };
   const defaultSize = (size?: string) =>
-    size === "large" ? 12 : size === "medium" ? 6 : 3;
+    size === "large" ? cols.lg : size === "medium" ? Math.ceil(cols.lg / 2) : Math.ceil(cols.lg / 4);
 
   const layouts: Layouts = {
     lg: visible.map((b, i) => ({
