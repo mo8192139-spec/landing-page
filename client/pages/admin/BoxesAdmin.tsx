@@ -181,6 +181,25 @@ export default function BoxesAdmin() {
               <Plus className="h-4 w-4 mr-2" /> Add Box
             </AdminButton>
             <AdminButton variant="secondary" onClick={applyAll}>Apply All Changes</AdminButton>
+            <label className="text-sm px-3 py-2 border rounded-lg cursor-pointer">Import JSON
+              <input type="file" accept="application/json" className="hidden" onChange={async (e) => {
+                const f = e.target.files?.[0]; if (!f) return;
+                const text = await f.text();
+                try { const parsed = JSON.parse(text);
+                  const next = { ...state } as any;
+                  if (parsed.boxes) next.boxes = parsed.boxes;
+                  if (parsed.settings?.grid) next.settings = { ...(state.settings||{}), grid: parsed.settings.grid };
+                  set(next);
+                } catch (err) { console.error("Invalid JSON", err); }
+              }} />
+            </label>
+            <AdminButton onClick={() => {
+              const data = JSON.stringify({ boxes: state.boxes, settings: { grid: state.settings?.grid } }, null, 2);
+              const blob = new Blob([data], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url; a.download = 'boxes-config.json'; a.click(); URL.revokeObjectURL(url);
+            }}>Export JSON</AdminButton>
           </div>
         }
       />
