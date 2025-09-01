@@ -21,6 +21,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "dompurify": "^3.2.6",
     "dotenv": "^17.2.1",
     "emoji-picker-react": "^4.13.2",
     "express": "^5.1.0",
